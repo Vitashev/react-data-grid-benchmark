@@ -1,0 +1,40 @@
+{
+  "name": "react-data-grid-benchmark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "benchmark": "npm run build && node scripts/run-all.mjs",
+    "report": "node scripts/build-report.mjs",
+    "build:site": "npm run build && npm run report"
+  },
+  "dependencies": {
+    "@ace-grid/core": "1.0.13",
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@handsontable/react-wrapper": "17.1.0",
+    "@mui/material": "7.3.6",
+    "@mui/x-data-grid": "9.6.0",
+    "@tanstack/react-table": "8.21.3",
+    "@tanstack/react-virtual": "3.14.3",
+    "ag-grid-community": "35.3.1",
+    "ag-grid-react": "35.3.1",
+    "handsontable": "17.1.0",
+    "react": "19.1.1",
+    "react-data-grid": "7.0.0-beta.57",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2",
+    "@vitejs/plugin-react": "6.0.2",
+    "playwright": "1.61.0",
+    "typescript": "5.8.3",
+    "vite": "8.0.16"
+  }
+}

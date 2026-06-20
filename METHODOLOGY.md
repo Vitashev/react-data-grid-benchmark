@@ -1,0 +1,40 @@
+# Methodology
+
+This repository compares implementation output, not marketing claims.
+
+## Fixture
+
+- 50,000 deterministic rows generated in the browser from committed code
+- 20 columns with fixed 140 px widths
+- 1,200 × 600 px grid viewport
+- 36 px row height
+- two editable text columns
+- sorting and filtering enabled where the community package provides them
+- vertical and horizontal virtual scrolling enabled where supported
+
+The fixture deliberately avoids network requests, images, custom cell renderers, grouping, aggregation, and paid-only features.
+
+## Measurements
+
+`npm run benchmark` builds production assets and opens every adapter in headless Chrome.
+
+1. Three warm-up runs are discarded.
+2. Ten measured runs use a fresh browser context and page.
+3. `readyMs` measures navigation start through two animation frames after the adapter mounts.
+4. `scrollSettleMs` measures three animation frames after a programmatic vertical and horizontal scroll.
+5. `mountedCells` counts mounted body cells after initial render.
+6. Bundle bytes include the shared benchmark runtime and the selected adapter's reachable JavaScript chunks. Gzip is computed with Node's default gzip settings.
+
+Raw samples, medians, and p95 values are written to `results/latest.json`.
+
+## Reproduction
+
+Use a quiet machine, record the hardware and Chrome version, and avoid comparing results produced on different environments.
+
+```bash
+npm ci
+npm run benchmark
+npm run report
+```
+
+The benchmark does not apply statistical significance tests. Treat small differences as noise unless repeated on multiple machines.

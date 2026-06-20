@@ -1,0 +1,23 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #eef3fb; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 1240px; }
+.benchmark-shell { width: 1240px; margin: 24px auto; }
+header { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 18px; }
+h1 { margin: 4px 0; font-size: 32px; }
+p, footer { color: #5d687a; }
+.eyebrow { color: #2f66dc; font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+nav { display: flex; flex-wrap: wrap; max-width: 700px; justify-content: flex-end; gap: 8px; }
+nav a { color: #40506a; background: #fff; border: 1px solid #d7dfec; border-radius: 999px; padding: 8px 12px; text-decoration: none; font-size: 13px; }
+nav a.active { color: #fff; background: #2f66dc; border-color: #2f66dc; }
+.scenario-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+.scenario-bar span { padding: 6px 10px; border-radius: 6px; background: #dce7fb; color: #23457d; font-size: 12px; }
+.scenario-bar [data-ready="true"] { background: #d9f2e4; color: #17663b; }
+.grid-frame { width: 1202px; height: 602px; border: 1px solid #cbd5e5; background: #fff; overflow: hidden; }
+.loading { display: grid; place-items: center; height: 600px; color: #64748b; }
+footer { margin-top: 12px; font-size: 13px; }
+.tanstack-grid { width: 1200px; height: 600px; overflow: auto; position: relative; background: #fff; }
+.tanstack-row { display: flex; position: absolute; left: 0; width: 100%; }
+.tanstack-header { display: flex; position: sticky; top: 0; z-index: 2; background: #edf3fc; }
+.tanstack-cell { width: 140px; min-width: 140px; height: 36px; padding: 8px 10px; border-right: 1px solid #e5eaf2; border-bottom: 1px solid #e5eaf2; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.tanstack-header .tanstack-cell { font-weight: 700; cursor: pointer; }
+.tanstack-spacer { position: relative; width: 2800px; }
