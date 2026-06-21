@@ -28,11 +28,20 @@ export default function AceGridAdapter({ rows: sourceRows, onReady }: AdapterPro
     },
     sorting: { sortMode: "client" },
     filter: { filterMode: "client", enableFloatingFilters: true },
-    selection: { enableCellSelection: true, isRowSelection: false, isColSelection: false }
+    selection: { enableCellSelection: true, isRowSelection: false, isColSelection: false },
+    pinning: { isRowPinning: false, isColPinning: false },
+    reorder: { isRowReorder: false, isColReorder: false },
+    resize: { enableRowResize: false, enableColumnResize: false },
+    spanning: { enableCellSpanning: false }
   } as unknown as GridProps;
   return <Grid {...gridProps} />;
 }
 
 function toGridRow(row: BenchmarkRow): GridRow {
-  return { id: row.id, data: { ...row } };
+  return {
+    id: row.id,
+    data: Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [key, { value }])
+    )
+  };
 }
