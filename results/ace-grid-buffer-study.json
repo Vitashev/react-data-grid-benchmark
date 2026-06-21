@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-06-20",
+  "environment": {
+    "cpu": "Apple M1 Pro",
+    "browser": "Chrome 149.0.7827.116"
+  },
+  "protocol": {
+    "warmups": 3,
+    "runs": 10,
+    "note": "Each profile was measured independently with the standard 50,000 x 20 fixture."
+  },
+  "profiles": [
+    {
+      "name": "Published fixture",
+      "rowBufferPx": 360,
+      "columnBufferPx": 280,
+      "readyMedianMs": 500.3,
+      "scrollSettleMedianMs": 94.1,
+      "mountedCells": 504,
+      "source": "results/latest.json"
+    },
+    {
+      "name": "Balanced",
+      "rowBufferPx": 72,
+      "columnBufferPx": 140,
+      "readyMedianMs": 503.2,
+      "scrollSettleMedianMs": 84.7,
+      "mountedCells": 260,
+      "samples": {
+        "readyMs": [484.7, 491.9, 498.5, 503.2, 503.2, 503.4, 507.8, 508.1, 508.8, 558.6],
+        "scrollSettleMs": [77.9, 78.7, 82.1, 82.9, 84.7, 85.9, 86.8, 91.6, 108.5, 123.8],
+        "mountedCells": [260, 260, 260, 260, 260, 260, 260, 260, 260, 260]
+      }
+    },
+    {
+      "name": "Minimum DOM",
+      "rowBufferPx": 0,
+      "columnBufferPx": 0,
+      "readyMedianMs": 506.7,
+      "scrollSettleMedianMs": 78.4,
+      "mountedCells": 176,
+      "samples": {
+        "readyMs": [481.4, 484.5, 501.5, 504.1, 506.7, 507.3, 520.9, 538.9, 545.5, 548.9],
+        "scrollSettleMs": [72.2, 73.9, 76.4, 78.1, 78.4, 78.8, 83.1, 84.3, 87.8, 88.3],
+        "mountedCells": [176, 176, 176, 176, 176, 176, 176, 176, 176, 176]
+      }
+    }
+  ]
+}

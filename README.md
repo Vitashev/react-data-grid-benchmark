@@ -26,6 +26,11 @@ Open `http://localhost:4173/react-data-grid-benchmark/` for the report or `http:
 
 Read [METHODOLOGY.md](./METHODOLOGY.md) and [LIMITATIONS.md](./LIMITATIONS.md) before interpreting or citing the output.
 
+The report defines each metric in plain language and includes a separate
+[Ace Grid buffer study](./results/ace-grid-buffer-study.json). That study shows
+how `rowBufferPx` and `columnBufferPx` change mounted DOM and scroll work
+without presenting an aggressive zero-buffer setup as a universal default.
+
 ## Why this exists
 
 Opinion articles are useful for discovering options, but engineering decisions need inspectable evidence. This repository makes the fixture, adapters, package lock, raw samples, and report public so readers can challenge or reproduce every number.

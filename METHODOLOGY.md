@@ -27,6 +27,22 @@ The fixture deliberately avoids network requests, images, custom cell renderers,
 
 Raw samples, medians, and p95 values are written to `results/latest.json`.
 
+## Ace Grid buffer study
+
+`results/ace-grid-buffer-study.json` records a separate configuration-sensitivity
+study for Ace Grid. It uses the same fixture and protocol while changing only
+`rowBufferPx` and `columnBufferPx`.
+
+- Larger buffers keep more offscreen rows and columns mounted, which can reduce
+  blank edges during fast or touch-driven scrolling.
+- Smaller buffers reduce DOM work, but zero overscan is an aggressive benchmark
+  setting rather than a general production recommendation.
+- Buffer changes did not materially improve initial readiness in this fixture,
+  so startup work must be investigated separately.
+
+Infinite-scroll thresholds are not rendering overscan. They decide when an
+application requests more data and do not directly reduce mounted DOM.
+
 ## Reproduction
 
 Use a quiet machine, record the hardware and Chrome version, and avoid comparing results produced on different environments.
