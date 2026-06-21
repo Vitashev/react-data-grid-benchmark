@@ -27,6 +27,14 @@ try {
   let browserVersion = "unknown";
   const runtime = {};
   for (const [id] of adapters) {
+    if (id === "mui") {
+      runtime[id] = {
+        excluded: true,
+        reason: "MUI X Community forces pagination and limits pages to 100 rows."
+      };
+      process.stdout.write(`excluded ${id} runtime (forced pagination)\n`);
+      continue;
+    }
     const browser = await chromium.launch({ headless: true, executablePath });
     browserVersion = browser.version();
     const samples = [];
@@ -65,12 +73,15 @@ try {
 
   const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
   const result = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     fixture: { rows: 50_000, columns: 20, viewport: { width: 1200, height: 600 }, editableColumns: 2 },
     protocol: { warmups, runs, browser: `Chrome ${browserVersion}`, coldPagePerRun: true },
     environment: { platform: platform(), release: release(), cpu: cpus()[0]?.model ?? "unknown", cpuCount: cpus().length, memoryBytes: totalmem(), node: process.version },
     versions: Object.fromEntries(Object.entries(packageJson.dependencies).filter(([name]) => ["@ace-grid/core", "ag-grid-react", "@mui/x-data-grid", "@tanstack/react-table", "handsontable", "react-data-grid", "react"].includes(name))),
+    comparability: Object.fromEntries(adapters.map(([id]) => [id, id === "mui"
+      ? { datasetMode: "forced-pagination", runtimeComparable: false, reason: "MUI X Community forces pagination and limits pages to 100 rows." }
+      : { datasetMode: "continuous-virtual", runtimeComparable: true }])),
     bundles: await bundleSizes(),
     runtime
   };

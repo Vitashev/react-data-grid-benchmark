@@ -10,7 +10,8 @@ This repository compares implementation output, not marketing claims.
 - 36 px row height
 - two editable text columns
 - sorting and filtering enabled where the community package provides them
-- vertical and horizontal virtual scrolling enabled where supported
+- vertical and horizontal virtual scrolling enabled where the selected package
+  exposes a continuous dataset surface
 
 The fixture deliberately avoids network requests, images, custom cell renderers, grouping, aggregation, and paid-only features.
 
@@ -26,6 +27,11 @@ The fixture deliberately avoids network requests, images, custom cell renderers,
 6. Bundle bytes include the shared benchmark runtime and the selected adapter's reachable JavaScript chunks. Gzip is computed with Node's default gzip settings.
 
 Raw samples, medians, and p95 values are written to `results/latest.json`.
+
+MUI X Community is not included in the runtime comparison. Its documented
+pagination behavior cannot be disabled and limits each page to 100 rows, so a
+scroll sample would cover one page rather than the shared 50,000-row surface.
+The live fixture remains available to make that limitation inspectable.
 
 ## Ace Grid buffer study
 

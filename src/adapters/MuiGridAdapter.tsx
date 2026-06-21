@@ -27,7 +27,6 @@ export default function MuiGridAdapter({ rows: sourceRows, onReady }: AdapterPro
         setRows((current) => current.map((row) => row.id === nextRow.id ? nextRow : row));
         return nextRow;
       }}
-      showToolbar
     />
   </div>;
 }

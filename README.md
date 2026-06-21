@@ -26,6 +26,11 @@ Open `http://localhost:4173/react-data-grid-benchmark/` for the report or `http:
 
 Read [METHODOLOGY.md](./METHODOLOGY.md) and [LIMITATIONS.md](./LIMITATIONS.md) before interpreting or citing the output.
 
+MUI X Community remains available as a live fixture and bundle measurement,
+but its runtime values are excluded from the continuous-dataset comparison.
+The community package forces pagination and caps each page at 100 rows, so its
+scroll surface is not equivalent to the 50,000-row virtualized fixtures.
+
 The report defines each metric in plain language and includes a separate
 [Ace Grid buffer study](./results/ace-grid-buffer-study.json). That study shows
 how `rowBufferPx` and `columnBufferPx` change mounted DOM and scroll work

@@ -59,7 +59,9 @@ function App() {
         </nav>
       </header>
       <section className="scenario-bar" aria-label="Scenario contract">
-        <span>2 editable columns</span><span>sorting</span><span>filtering</span><span>virtual scrolling</span><span data-ready={ready}>{ready ? "ready" : "loading"}</span>
+        <span>2 editable columns</span><span>sorting</span><span>filtering</span>
+        <span>{activeGrid.datasetMode === "forced-pagination" ? "forced pagination · 100 rows/page" : "continuous virtual scrolling"}</span>
+        <span data-ready={ready}>{ready ? "ready" : "loading"}</span>
       </section>
       <div className="grid-frame" data-benchmark-grid>
         <Suspense fallback={<div className="loading">Loading adapter…</div>}>

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "generatedAt": "2026-06-21T19:05:29.700Z",
   "fixture": {
     "rows": 50000,
@@ -32,6 +32,18 @@
     "handsontable": "17.1.0",
     "react": "19.1.1",
     "react-data-grid": "7.0.0-beta.57"
+  },
+  "comparability": {
+    "ace-grid": { "datasetMode": "continuous-virtual", "runtimeComparable": true },
+    "ag-grid": { "datasetMode": "continuous-virtual", "runtimeComparable": true },
+    "mui": {
+      "datasetMode": "forced-pagination",
+      "runtimeComparable": false,
+      "reason": "MUI X Community forces pagination and limits pages to 100 rows."
+    },
+    "tanstack": { "datasetMode": "continuous-virtual", "runtimeComparable": true },
+    "handsontable": { "datasetMode": "continuous-virtual", "runtimeComparable": true },
+    "react-data-grid": { "datasetMode": "continuous-virtual", "runtimeComparable": true }
   },
   "bundles": {
     "ace-grid": {
@@ -193,54 +205,8 @@
       }
     },
     "mui": {
-      "readyMs": {
-        "median": 410.4,
-        "p95": 415.5,
-        "samples": [
-          407.40000000596046,
-          408,
-          408.5,
-          409.40000000596046,
-          410.40000000596046,
-          410.5,
-          412.7000000178814,
-          413.69999998807907,
-          414,
-          415.5
-        ]
-      },
-      "scrollSettleMs": {
-        "median": 20.4,
-        "p95": 24.5,
-        "samples": [
-          16.69999998807907,
-          17.19999998807907,
-          18.200000017881393,
-          19.30000001192093,
-          20.400000005960464,
-          21.5,
-          21.80000001192093,
-          22.5,
-          23.400000005960464,
-          24.5
-        ]
-      },
-      "mountedCells": {
-        "median": 228,
-        "p95": 228,
-        "samples": [
-          228,
-          228,
-          228,
-          228,
-          228,
-          228,
-          228,
-          228,
-          228,
-          228
-        ]
-      }
+      "excluded": true,
+      "reason": "MUI X Community forces pagination and limits pages to 100 rows."
     },
     "tanstack": {
       "readyMs": {

@@ -19,6 +19,7 @@ const result = {
   ...partials[0],
   generatedAt: new Date().toISOString(),
   versions: Object.assign({}, ...partials.map((partial) => partial.versions)),
+  comparability: Object.assign({}, ...partials.map((partial) => partial.comparability)),
   bundles: Object.assign({}, ...partials.map((partial) => partial.bundles)),
   runtime: Object.assign({}, ...partials.map((partial) => partial.runtime))
 };

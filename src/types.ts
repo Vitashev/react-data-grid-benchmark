@@ -32,5 +32,6 @@ export type GridDefinition = {
   name: string;
   packageName: string;
   license: string;
+  datasetMode: "continuous-virtual" | "forced-pagination";
   importer: () => Promise<AdapterModule>;
 };
