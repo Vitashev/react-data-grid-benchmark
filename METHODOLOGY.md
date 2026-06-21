@@ -22,7 +22,7 @@ The fixture deliberately avoids network requests, images, custom cell renderers,
 2. Ten measured runs use a fresh browser context and page.
 3. `readyMs` measures navigation start through two animation frames after the adapter mounts.
 4. `scrollSettleMs` measures three animation frames after a programmatic vertical and horizontal scroll.
-5. `mountedCells` counts mounted body cells after initial render.
+5. `mountedCells` counts mounted body cells after the benchmark scroll jump.
 6. Bundle bytes include the shared benchmark runtime and the selected adapter's reachable JavaScript chunks. Gzip is computed with Node's default gzip settings.
 
 Raw samples, medians, and p95 values are written to `results/latest.json`.
@@ -42,6 +42,14 @@ study for Ace Grid. It uses the same fixture and protocol while changing only
 
 Infinite-scroll thresholds are not rendering overscan. They decide when an
 application requests more data and do not directly reduce mounted DOM.
+
+## Ace Grid optimization candidate
+
+`results/ace-grid-optimization-candidate.json` records a separate run against
+an unreleased local Ace Grid build. It is deliberately excluded from the main
+ranking because `npm ci` cannot reproduce unpublished package code. The study
+exists to prevent a small internal optimization from being presented as a
+released-package performance claim.
 
 ## Reproduction
 

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-06-21",
+  "status": "unreleased-local-candidate",
+  "environment": {
+    "cpu": "Apple M1 Pro",
+    "browser": "Chrome 149.0.7827.116"
+  },
+  "protocol": {
+    "warmups": 3,
+    "runs": 10,
+    "fixture": "50,000 rows x 20 columns, 1,200 x 600 px viewport",
+    "buffers": {
+      "rowBufferPx": 360,
+      "columnBufferPx": 280
+    }
+  },
+  "change": "Reuse immutable empty span metadata for ordinary fixed-height rows and skip the row-group ID lookup when row reordering is disabled.",
+  "baseline": {
+    "source": "results/latest.json",
+    "package": "@ace-grid/core@1.0.13",
+    "readyMedianMs": 500.3,
+    "scrollSettleMedianMs": 94.1,
+    "mountedCells": 504
+  },
+  "candidate": {
+    "source": "local workspace build based on @ace-grid/core@1.0.13",
+    "readyMedianMs": 502.1,
+    "scrollSettleMedianMs": 88,
+    "mountedCells": 504,
+    "samples": {
+      "readyMs": [497.5, 499.2, 499.4, 499.8, 502.1, 502.9, 505.1, 505.8, 515.2, 533],
+      "scrollSettleMs": [78.8, 79.4, 84, 86.8, 88, 88.4, 95.1, 96, 96.5, 97.3],
+      "mountedCells": [504, 504, 504, 504, 504, 504, 504, 504, 504, 504]
+    }
+  },
+  "conclusion": "The candidate did not materially change initial readiness. The lower scroll median is not attributed to this startup-only change without additional independent runs."
+}

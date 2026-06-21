@@ -30,6 +30,9 @@ The report defines each metric in plain language and includes a separate
 [Ace Grid buffer study](./results/ace-grid-buffer-study.json). That study shows
 how `rowBufferPx` and `columnBufferPx` change mounted DOM and scroll work
 without presenting an aggressive zero-buffer setup as a universal default.
+An additional [optimization candidate study](./results/ace-grid-optimization-candidate.json)
+keeps measurements from unreleased Ace Grid code separate from the published
+package ranking.
 
 ## Why this exists
 
