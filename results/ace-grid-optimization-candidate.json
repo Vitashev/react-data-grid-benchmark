@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "recordedOn": "2026-06-21",
   "status": "unreleased-local-candidate",
   "environment": {
@@ -9,30 +9,34 @@
   "protocol": {
     "warmups": 3,
     "runs": 10,
-    "fixture": "50,000 rows x 20 columns, 1,200 x 600 px viewport",
+    "fixture": "50,000 rows x 20 columns with populated CellValue objects",
     "buffers": {
-      "rowBufferPx": 360,
-      "columnBufferPx": 280
+      "rowBufferPx": 72,
+      "columnBufferPx": 140
     }
   },
-  "change": "Reuse immutable empty span metadata for ordinary fixed-height rows and skip the row-group ID lookup when row reordering is disabled.",
+  "change": "Reuse immutable empty span metadata for fixed-height rows and skip the row-group ID lookup when row reordering is disabled.",
   "baseline": {
-    "source": "results/latest.json",
-    "package": "@ace-grid/core@1.0.13",
-    "readyMedianMs": 500.3,
-    "scrollSettleMedianMs": 94.1,
-    "mountedCells": 504
+    "source": "published @ace-grid/core@1.0.13",
+    "readyMedianMs": 483.6,
+    "scrollSettleMedianMs": 78.7,
+    "mountedCells": 220,
+    "samples": {
+      "readyMs": [477.7, 480.6, 480.9, 482.2, 483.6, 483.6, 485.3, 485.9, 490.2, 538.6],
+      "scrollSettleMs": [72, 75.1, 75.8, 76.7, 78.7, 79.7, 80.2, 87.1, 92.1, 99.1],
+      "mountedCells": [220, 220, 220, 220, 220, 220, 220, 220, 220, 220]
+    }
   },
   "candidate": {
     "source": "local workspace build based on @ace-grid/core@1.0.13",
-    "readyMedianMs": 502.1,
-    "scrollSettleMedianMs": 88,
-    "mountedCells": 504,
+    "readyMedianMs": 472.3,
+    "scrollSettleMedianMs": 70.7,
+    "mountedCells": 220,
     "samples": {
-      "readyMs": [497.5, 499.2, 499.4, 499.8, 502.1, 502.9, 505.1, 505.8, 515.2, 533],
-      "scrollSettleMs": [78.8, 79.4, 84, 86.8, 88, 88.4, 95.1, 96, 96.5, 97.3],
-      "mountedCells": [504, 504, 504, 504, 504, 504, 504, 504, 504, 504]
+      "readyMs": [470, 470.6, 471, 471.1, 472.3, 475.4, 491.9, 518, 520.8, 524.3],
+      "scrollSettleMs": [66.9, 67.8, 69.7, 70, 70.7, 71.5, 75.7, 75.7, 77.6, 79.6],
+      "mountedCells": [220, 220, 220, 220, 220, 220, 220, 220, 220, 220]
     }
   },
-  "conclusion": "The candidate did not materially change initial readiness. The lower scroll median is not attributed to this startup-only change without additional independent runs."
+  "conclusion": "In this run the candidate improved ready median by 2.3% and scroll-settle median by 10.2%. Treat the scroll result as promising rather than conclusive until repeated on additional machines."
 }

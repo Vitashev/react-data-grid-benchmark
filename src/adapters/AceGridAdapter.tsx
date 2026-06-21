@@ -21,7 +21,7 @@ export default function AceGridAdapter({ rows: sourceRows, onReady }: AdapterPro
     data: { rows, columns },
     layout: { width: GRID_WIDTH, height: GRID_HEIGHT, rowHeight: ROW_HEIGHT },
     columns: { columnWidths: Object.fromEntries(fieldNames.map((field) => [field, 140])) },
-    virtual: { enableVirtualization: true, enableHorizontalVirtualization: true, rowBufferPx: 360, columnBufferPx: 280 },
+    virtual: { enableVirtualization: true, enableHorizontalVirtualization: true, rowBufferPx: 72, columnBufferPx: 140 },
     edit: {
       isCellEditing: true,
       onCellChange: (rowId: string | number, columnKey: string, value: CellValue) => setRows((current) => current.map((row) => row.id === rowId ? { ...row, data: { ...row.data, [columnKey]: value } } : row))
