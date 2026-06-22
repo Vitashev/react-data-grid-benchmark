@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
-import { Grid, type CellValue, type GridColumnDef, type GridProps, type GridRow } from "@ace-grid/core";
+import { createGridRowsFromRecords, Grid, type CellValue, type GridColumnDef, type GridProps, type GridRow } from "@ace-grid/core";
 import { fieldNames, GRID_HEIGHT, GRID_WIDTH, ROW_HEIGHT, titleFor } from "../fixture";
-import type { AdapterProps, BenchmarkRow } from "../types";
+import type { AdapterProps } from "../types";
 import { useReady } from "../useReady";
 
 export default function AceGridAdapter({ rows: sourceRows, onReady }: AdapterProps) {
-  const [rows, setRows] = useState<GridRow[]>(() => sourceRows.map(toGridRow));
+  const [rows, setRows] = useState<GridRow[]>(() =>
+    createGridRowsFromRecords(sourceRows)
+  );
   const columns = useMemo<GridColumnDef[]>(() => fieldNames.map((key) => ({
     key,
     title: titleFor(key),
@@ -27,7 +29,7 @@ export default function AceGridAdapter({ rows: sourceRows, onReady }: AdapterPro
       onCellChange: (rowId: string | number, columnKey: string, value: CellValue) => setRows((current) => current.map((row) => row.id === rowId ? { ...row, data: { ...row.data, [columnKey]: value } } : row))
     },
     sorting: { sortMode: "client" },
-    filter: { filterMode: "client", enableFloatingFilters: true },
+    filter: { filterMode: "client" },
     selection: { enableCellSelection: true, isRowSelection: false, isColSelection: false },
     pinning: { isRowPinning: false, isColPinning: false },
     reorder: { isRowReorder: false, isColReorder: false },
@@ -35,13 +37,4 @@ export default function AceGridAdapter({ rows: sourceRows, onReady }: AdapterPro
     spanning: { enableCellSpanning: false }
   } as unknown as GridProps;
   return <Grid {...gridProps} />;
-}
-
-function toGridRow(row: BenchmarkRow): GridRow {
-  return {
-    id: row.id,
-    data: Object.fromEntries(
-      Object.entries(row).map(([key, value]) => [key, { value }])
-    )
-  };
 }

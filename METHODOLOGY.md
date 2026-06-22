@@ -49,13 +49,14 @@ study for Ace Grid. It uses the same fixture and protocol while changing only
 Infinite-scroll thresholds are not rendering overscan. They decide when an
 application requests more data and do not directly reduce mounted DOM.
 
-## Ace Grid optimization candidate
+## Ace Grid and AG Grid verification run
 
-`results/ace-grid-optimization-candidate.json` records a separate run against
-an unreleased local Ace Grid build. It is deliberately excluded from the main
-ranking because `npm ci` cannot reproduce unpublished package code. The study
-exists to prevent a small internal optimization from being presented as a
-released-package performance claim.
+`results/ace-ag-1.0.15.json` records 30 measured runs against published
+`@ace-grid/core@1.0.15` and the pinned AG Grid Community package. Five warmups
+are discarded, execution order alternates each round, and every sample uses a
+fresh browser context. Both adapters receive the same vertical and horizontal
+scroll jump. This larger run is a reproducibility check for the two products,
+not a substitute for the complete comparison or a universal ranking.
 
 ## Reproduction
 

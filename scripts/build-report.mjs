@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const result = JSON.parse(await readFile(resolve(root, "results/latest.json"), "utf8"));
 const aceBufferStudy = JSON.parse(await readFile(resolve(root, "results/ace-grid-buffer-study.json"), "utf8"));
-const aceOptimizationStudy = JSON.parse(await readFile(resolve(root, "results/ace-grid-optimization-candidate.json"), "utf8"));
+const focusedComparison = JSON.parse(await readFile(resolve(root, "results/ace-ag-1.0.15.json"), "utf8"));
 const names = { "ace-grid": "Ace Grid Core", "ag-grid": "AG Grid Community", mui: "MUI X Data Grid Community", tanstack: "TanStack Table + Virtual", handsontable: "Handsontable", "react-data-grid": "React Data Grid" };
 const versionKeys = { "ace-grid": "@ace-grid/core", "ag-grid": "ag-grid-react", mui: "@mui/x-data-grid", tanstack: "@tanstack/react-table", handsontable: "handsontable", "react-data-grid": "react-data-grid" };
 const fmt = (value) => value == null || Number.isNaN(value) ? "n/a" : Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -22,12 +22,16 @@ const tableRows = Object.entries(names).map(([id, name]) => {
 const aceBufferRows = aceBufferStudy.profiles.map((profile) =>
   `<tr><th>${profile.name}</th><td>${profile.rowBufferPx}px</td><td>${profile.columnBufferPx}px</td><td>${fmt(profile.readyMedianMs)} ms</td><td>${fmt(profile.scrollSettleMedianMs)} ms</td><td>${fmt(profile.mountedCells)}</td></tr>`
 ).join("\n");
-const aceOptimizationRows = [
-  ["Published package", aceOptimizationStudy.baseline],
-  ["Unreleased candidate", aceOptimizationStudy.candidate],
+const focusedRows = [
+  ["Ace Grid Core", focusedComparison.summary["ace-grid"]],
+  ["AG Grid Community", focusedComparison.summary["ag-grid"]],
 ].map(([name, sample]) =>
-  `<tr><th>${name}</th><td>${fmt(sample.readyMedianMs)} ms</td><td>${fmt(sample.scrollSettleMedianMs)} ms</td><td>${fmt(sample.mountedCells)}</td></tr>`
+  `<tr><th>${name}</th><td>${fmt(sample.readyMs.median)} ms</td><td>${fmt(sample.readyMs.p95)} ms</td><td>${fmt(sample.scrollSettleMs.median)} ms</td><td>${fmt(sample.scrollSettleMs.p95)} ms</td><td>${fmt(sample.mountedCells.median)}</td></tr>`
 ).join("\n");
+const focusedAce = focusedComparison.summary["ace-grid"];
+const focusedAg = focusedComparison.summary["ag-grid"];
+const readyLead = percentReduction(focusedAce.readyMs.median, focusedAg.readyMs.median);
+const scrollLead = percentReduction(focusedAce.scrollSettleMs.median, focusedAg.scrollSettleMs.median);
 
 const command = [
   "git clone https://github.com/Vitashev/react-data-grid-benchmark.git",
@@ -52,7 +56,7 @@ const html = `<!doctype html>
   <article><h3>Mounted cells</h3><p>Body cells present in the DOM after the benchmark scroll jump. Fewer cells reduce DOM work, but too little overscan can reveal blank edges during fast scrolling.</p></article>
 </div></section>
 <section id="ace-tuning"><div class="section-heading"><div><span class="eyebrow">Ace Grid configuration study</span><h2>Buffers trade DOM size for scroll headroom</h2></div><p>These are separate Ace Grid runs of the same fixture. Only <code>rowBufferPx</code> and <code>columnBufferPx</code> changed.</p></div><div class="table-wrap"><table><thead><tr><th>Profile</th><th>Row buffer</th><th>Column buffer</th><th>Ready median</th><th>Scroll settle</th><th>Mounted cells</th></tr></thead><tbody>${aceBufferRows}</tbody></table></div><div class="callout"><strong>Practical starting point:</strong> use a small nonzero buffer, test trackpad and touch scrolling on target hardware, and increase it only if users can outrun rendering. Zero overscan minimizes this fixture's DOM, but is not the default recommendation. Infinite-scroll thresholds control data fetching, not rendering overscan.</div></section>
-<section id="ace-optimization"><div class="section-heading"><div><span class="eyebrow">Ace Grid optimization candidate</span><h2>A guarded allocation reduction, measured separately</h2></div><p>The candidate reuses empty span metadata and omits an unused row-reorder lookup. It is measured separately because it is not part of the published npm package.</p></div><div class="table-wrap"><table><thead><tr><th>Build</th><th>Ready median</th><th>Scroll settle</th><th>Mounted cells</th></tr></thead><tbody>${aceOptimizationRows}</tbody></table></div><div class="callout"><strong>Result:</strong> this run improved ready median by 2.3% and scroll-settle median by 10.2% with the same mounted DOM. The scroll result is promising, not conclusive, until it is repeated on additional machines. The published-package row above remains the ranking source. <a href="https://github.com/Vitashev/react-data-grid-benchmark/blob/main/results/ace-grid-optimization-candidate.json">Inspect the raw candidate samples.</a></div></section>
+<section id="ace-ag-verification"><div class="section-heading"><div><span class="eyebrow">Published-package verification</span><h2>Ace Grid 1.0.15 versus AG Grid, 30 alternating runs</h2></div><p>Each sample uses a fresh browser context. Execution order alternates to reduce warm-machine and ordering bias. Both grids receive the same vertical and horizontal scroll jump.</p></div><div class="table-wrap"><table><thead><tr><th>Implementation</th><th>Ready median</th><th>Ready p95</th><th>Scroll median</th><th>Scroll p95</th><th>Mounted cells</th></tr></thead><tbody>${focusedRows}</tbody></table></div><div class="callout"><strong>Result on this machine:</strong> Ace Grid reached ready ${readyLead}% sooner, settled the scripted scroll ${scrollLead}% sooner, and mounted ${fmt(focusedAg.mountedCells.median - focusedAce.mountedCells.median)} fewer cells. This is evidence for the committed fixture, not a universal fastest-grid claim. <a href="https://github.com/Vitashev/react-data-grid-benchmark/blob/main/results/ace-ag-1.0.15.json">Inspect all 30 raw samples.</a></div></section>
 <section class="notes"><article><span class="eyebrow">What this tests</span><h2>A controlled engineering fixture</h2><p>Comparable adapters receive the same generated rows, column count, viewport, row height, two editable columns, sorting, filtering, and continuous virtual-scrolling target. Non-comparable product constraints are shown instead of normalized away.</p></article><article><span class="eyebrow">What this does not prove</span><h2>No universal “fastest grid” claim</h2><p>This does not measure your application, server data model, feature depth, accessibility, support, or total migration cost. Read <a href="https://github.com/Vitashev/react-data-grid-benchmark/blob/main/LIMITATIONS.md">the limitations</a> before citing a number.</p></article></section>
 <section class="method"><h2>Reproduce it</h2><pre><code>${command}</code></pre><p>Committed results include every raw sample. The lockfile preserves exact transitive dependencies.</p></section>
 </main></body></html>`;
@@ -60,7 +64,11 @@ const html = `<!doctype html>
 await mkdir(resolve(root, "dist"), { recursive: true });
 await writeFile(resolve(root, "dist/index.html"), html);
 await copyFile(resolve(root, "results/latest.json"), resolve(root, "dist/results.json"));
-await copyFile(resolve(root, "results/ace-grid-optimization-candidate.json"), resolve(root, "dist/ace-grid-optimization-candidate.json"));
+await copyFile(resolve(root, "results/ace-ag-1.0.15.json"), resolve(root, "dist/ace-ag-1.0.15.json"));
+
+function percentReduction(value, baseline) {
+  return fmt(((baseline - value) / baseline) * 100);
+}
 
 function escapeHtml(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
