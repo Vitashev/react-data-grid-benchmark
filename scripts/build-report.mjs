@@ -8,6 +8,9 @@ const result = JSON.parse(
 const focusedComparison = JSON.parse(
   await readFile(resolve(root, "results/ace-ag-1.0.15.json"), "utf8"),
 );
+const interactionHealth = JSON.parse(
+  await readFile(resolve(root, "results/interaction-health.json"), "utf8"),
+);
 
 const implementations = [
   ["ace-grid", "Ace Grid Core", "@ace-grid/core"],
@@ -88,6 +91,80 @@ const focusedRows = [
   })
   .join("\n");
 
+const interactionComparableIds = implementations
+  .filter(([id]) => result.comparability?.[id]?.runtimeComparable !== false)
+  .map(([id]) => id);
+const interactionWinners = {
+  heapReady: lowestIds(
+    interactionComparableIds.map((id) => [
+      id,
+      interactionHealth.grids[id]?.median?.afterReadyHeapBytes,
+    ]),
+  ),
+  heapScroll: lowestIds(
+    interactionComparableIds.map((id) => [
+      id,
+      interactionHealth.grids[id]?.median?.afterScrollHeapBytes,
+    ]),
+  ),
+  longTaskTotal: lowestIds(
+    interactionComparableIds.map((id) => [
+      id,
+      interactionHealth.grids[id]?.median?.longTaskTotalMs,
+    ]),
+  ),
+  fps: highestIds(
+    interactionComparableIds.map((id) => [
+      id,
+      interactionHealth.grids[id]?.median?.estimatedFps,
+    ]),
+  ),
+  droppedFrames: lowestIds(
+    interactionComparableIds.map((id) => [
+      id,
+      interactionHealth.grids[id]?.median?.droppedFrameCount20ms,
+    ]),
+  ),
+};
+const interactionRows = implementations
+  .map(([id, name]) => {
+    const sample = interactionHealth.grids[id]?.median;
+    const comparable = result.comparability?.[id]?.runtimeComparable !== false;
+    if (!sample) return "";
+    const cells = [
+      metricCell(
+        fmtBytes(sample.afterReadyHeapBytes),
+        "",
+        comparable && interactionWinners.heapReady.has(id),
+      ),
+      metricCell(
+        fmtBytes(sample.afterScrollHeapBytes),
+        "",
+        comparable && interactionWinners.heapScroll.has(id),
+      ),
+      metricCell(
+        fmt(sample.longTaskTotalMs),
+        "ms",
+        comparable && interactionWinners.longTaskTotal.has(id),
+      ),
+      metricCell(
+        fmt(sample.estimatedFps),
+        "FPS",
+        comparable && interactionWinners.fps.has(id),
+      ),
+      metricCell(
+        fmt(sample.droppedFrameCount20ms),
+        "",
+        comparable && interactionWinners.droppedFrames.has(id),
+      ),
+    ].join("");
+    const note = comparable
+      ? ""
+      : ' <span class="inline-note">pagination-limited</span>';
+    return `<tr${comparable ? "" : ' class="not-comparable"'}><th>${name}${note}</th>${cells}</tr>`;
+  })
+  .join("\n");
+
 const focusedAce = focusedComparison.summary["ace-grid"];
 const focusedAg = focusedComparison.summary["ag-grid"];
 const readyLead = percentReduction(
@@ -124,6 +201,8 @@ const html = `<!doctype html>
 
 <section id="ace-ag-verification"><div class="section-heading"><div><span class="eyebrow">Published-package verification</span><h2>Ace Grid 1.0.15 vs AG Grid</h2></div><p>Thirty alternating-order runs, five discarded warmups, and a fresh browser context for every sample.</p></div><div class="table-wrap"><table><caption>Focused 30-run comparison</caption><thead><tr><th>Library</th><th>Ready median</th><th>Ready p95</th><th>Scroll median</th><th>Scroll p95</th><th>Mounted cells</th></tr></thead><tbody>${focusedRows}</tbody></table></div><div class="result-note"><strong>On this machine:</strong> Ace Grid reached ready ${readyLead}% sooner, settled the scripted scroll ${scrollLead}% sooner, and mounted ${fmt(focusedAg.mountedCells.median - focusedAce.mountedCells.median)} fewer cells. <a href="https://github.com/Vitashev/react-data-grid-benchmark/blob/main/results/ace-ag-1.0.15.json">View all raw samples</a>.</div></section>
 
+<section id="interaction-health"><div class="section-heading"><div><span class="eyebrow">Interaction health</span><h2>Memory, long tasks, and smoothness</h2></div><p>Five measured runs after one warmup. Each run performs a two-second continuous scroll in a fresh Chrome context.</p></div><div class="table-wrap"><table><caption>Continuous scroll interaction measurements</caption><thead><tr><th>Library</th><th>Heap ready</th><th>Heap after scroll</th><th>Long-task total</th><th>Estimated FPS</th><th>Dropped frames &gt;20ms</th></tr></thead><tbody>${interactionRows}</tbody></table></div><p class="environment">${escapeHtml(interactionHealth.environment.cpu)} · ${interactionHealth.protocol.browser} · generated ${new Date(interactionHealth.generatedAt).toLocaleDateString("en-US", { dateStyle: "long" })} · <a href="https://github.com/Vitashev/react-data-grid-benchmark/blob/main/results/interaction-health.json">View raw samples</a></p></section>
+
 <section class="footer-grid"><article><span class="eyebrow">Limits</span><h2>Not a universal ranking</h2><p>Results depend on hardware, browser, configuration, enabled features, and application workload. This benchmark does not measure accessibility, support, feature depth, server data, or migration cost.</p><a href="https://github.com/Vitashev/react-data-grid-benchmark/blob/main/LIMITATIONS.md">Read limitations</a></article><article><span class="eyebrow">Reproduce</span><h2>Run it yourself</h2><pre><code>${command}</code></pre></article></section>
 </main></body></html>`;
 
@@ -137,12 +216,24 @@ await copyFile(
   resolve(root, "results/ace-ag-1.0.15.json"),
   resolve(root, "dist/ace-ag-1.0.15.json"),
 );
+await copyFile(
+  resolve(root, "results/interaction-health.json"),
+  resolve(root, "dist/interaction-health.json"),
+);
 
 function lowestIds(entries) {
   const numeric = entries.filter(([, value]) => Number.isFinite(value));
   const lowest = Math.min(...numeric.map(([, value]) => value));
   return new Set(
     numeric.filter(([, value]) => value === lowest).map(([id]) => id),
+  );
+}
+
+function highestIds(entries) {
+  const numeric = entries.filter(([, value]) => Number.isFinite(value));
+  const highest = Math.max(...numeric.map(([, value]) => value));
+  return new Set(
+    numeric.filter(([, value]) => value === highest).map(([id]) => id),
   );
 }
 
@@ -157,6 +248,12 @@ function percentReduction(value, baseline) {
   return fmt(((baseline - value) / baseline) * 100);
 }
 
+function fmtBytes(value) {
+  return value == null || Number.isNaN(value)
+    ? "n/a"
+    : `${fmt(value / 1024 / 1024)} MB`;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -165,5 +262,5 @@ function escapeHtml(value) {
 }
 
 function styles() {
-  return `:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}main{max-width:1180px;margin:auto;padding:24px 24px 64px}header{padding:52px;border:1px solid #d9e1ed;border-radius:24px;background:#fff}h1{font-size:clamp(42px,6vw,68px);line-height:1;letter-spacing:-.05em;margin:12px 0 18px}h2{font-size:clamp(28px,3vw,38px);letter-spacing:-.035em;margin:7px 0 0}h3{margin:0 0 14px;font-size:18px}.eyebrow{color:#2864d7;text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800}.lede{max-width:720px;margin:0;color:#55647a;font-size:20px;line-height:1.55}.actions{display:flex;gap:10px;margin-top:26px}.actions a,.footer-grid a{color:#1e56b9;font-weight:750}.actions a{padding:11px 16px;border:1px solid #cbd6e6;border-radius:10px;text-decoration:none;background:#fff}.actions .primary{color:#fff;background:#2864d7;border-color:#2864d7}.setup{display:grid;grid-template-columns:repeat(4,1fr);margin:16px 0 0;border:1px solid #d9e1ed;border-radius:16px;background:#fff;overflow:hidden}.setup div{padding:17px 20px;border-right:1px solid #e3e8f0}.setup div:last-child{border:0}.setup b,.setup span{display:block}.setup b{font-size:22px}.setup span{margin-top:2px;color:#6a778b;font-size:13px}section:not(.setup){margin-top:56px}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:18px}.section-heading.compact{margin-bottom:16px}.section-heading p{max-width:480px;margin:0;color:#627087;line-height:1.55}.table-wrap{overflow:auto;border:1px solid #d9e1ed;border-radius:16px;background:#fff}table{width:100%;min-width:900px;border-collapse:collapse}caption{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}th,td{padding:16px;border-bottom:1px solid #e4e9f1;text-align:left;white-space:nowrap}thead th{color:#68758a;font-size:12px;text-transform:uppercase;letter-spacing:.08em}tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}tbody th a{color:#1f59bd}.not-comparable td[colspan]{color:#7b4d17;background:#fff8eb}.winner{background:#f6f9ff;font-weight:750}.winner>span:last-child{color:#163f8f}.crown{display:inline-grid;place-items:center;margin-right:7px;color:#d99b16;font-size:18px;line-height:1;vertical-align:-1px}.environment{margin:10px 3px 0;color:#6a778b;font-size:13px}.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);margin:0;border:1px solid #d9e1ed;border-radius:16px;background:#fff;overflow:hidden}.metric-grid div{padding:22px;border-right:1px solid #e4e9f1;border-bottom:1px solid #e4e9f1}.metric-grid div:nth-child(2n){border-right:0}.metric-grid div:nth-last-child(-n+2){border-bottom:0}.metric-grid dt{font-size:17px;font-weight:800}.metric-grid dd{margin:7px 0 0;color:#5d6a7e;line-height:1.55}.method-grid,.footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.method-grid article,.footer-grid article{padding:25px;border:1px solid #d9e1ed;border-radius:16px;background:#fff}.method-grid ul{margin:0;padding-left:20px;color:#56657a;line-height:1.75}.notice,.result-note{margin-top:14px;padding:17px 19px;border-radius:12px;background:#eaf1ff;color:#53637a;line-height:1.55}.notice{border-left:4px solid #2864d7}.result-note a{color:#1f59bd}.footer-grid p{color:#5d6a7e;line-height:1.6}.footer-grid pre{margin:14px 0 0;padding:17px;border-radius:10px;overflow:auto;background:#111a2b;color:#dce7f7;line-height:1.6;font-size:12px}@media(max-width:760px){main{padding:14px 14px 48px}header{padding:34px 24px}.setup,.metric-grid,.method-grid,.footer-grid{grid-template-columns:1fr 1fr}.section-heading{display:block}.section-heading p{margin-top:10px}.actions{flex-direction:column}.setup div:nth-child(2){border-right:0}.setup div:nth-child(-n+2){border-bottom:1px solid #e3e8f0}}@media(max-width:520px){.metric-grid,.method-grid,.footer-grid{grid-template-columns:1fr}.metric-grid div{border-right:0}.metric-grid div:nth-last-child(2){border-bottom:1px solid #e4e9f1}}`;
+  return `:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f5f7fb}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}main{max-width:1180px;margin:auto;padding:24px 24px 64px}header{padding:52px;border:1px solid #d9e1ed;border-radius:24px;background:#fff}h1{font-size:clamp(42px,6vw,68px);line-height:1;letter-spacing:-.05em;margin:12px 0 18px}h2{font-size:clamp(28px,3vw,38px);letter-spacing:-.035em;margin:7px 0 0}h3{margin:0 0 14px;font-size:18px}.eyebrow{color:#2864d7;text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800}.lede{max-width:720px;margin:0;color:#55647a;font-size:20px;line-height:1.55}.actions{display:flex;gap:10px;margin-top:26px}.actions a,.footer-grid a,.environment a{color:#1e56b9;font-weight:750}.actions a{padding:11px 16px;border:1px solid #cbd6e6;border-radius:10px;text-decoration:none;background:#fff}.actions .primary{color:#fff;background:#2864d7;border-color:#2864d7}.setup{display:grid;grid-template-columns:repeat(4,1fr);margin:16px 0 0;border:1px solid #d9e1ed;border-radius:16px;background:#fff;overflow:hidden}.setup div{padding:17px 20px;border-right:1px solid #e3e8f0}.setup div:last-child{border:0}.setup b,.setup span{display:block}.setup b{font-size:22px}.setup span{margin-top:2px;color:#6a778b;font-size:13px}section:not(.setup){margin-top:56px}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:40px;margin-bottom:18px}.section-heading.compact{margin-bottom:16px}.section-heading p{max-width:480px;margin:0;color:#627087;line-height:1.55}.table-wrap{overflow:auto;border:1px solid #d9e1ed;border-radius:16px;background:#fff}table{width:100%;min-width:900px;border-collapse:collapse}caption{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}th,td{padding:16px;border-bottom:1px solid #e4e9f1;text-align:left;white-space:nowrap}thead th{color:#68758a;font-size:12px;text-transform:uppercase;letter-spacing:.08em}tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}tbody th a{color:#1f59bd}.not-comparable td[colspan]{color:#7b4d17;background:#fff8eb}.inline-note{display:inline-block;margin-left:7px;color:#7b4d17;font-size:12px;font-weight:700}.winner{background:#f6f9ff;font-weight:750}.winner>span:last-child{color:#163f8f}.crown{display:inline-grid;place-items:center;margin-right:7px;color:#d99b16;font-size:18px;line-height:1;vertical-align:-1px}.environment{margin:10px 3px 0;color:#6a778b;font-size:13px}.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);margin:0;border:1px solid #d9e1ed;border-radius:16px;background:#fff;overflow:hidden}.metric-grid div{padding:22px;border-right:1px solid #e4e9f1;border-bottom:1px solid #e4e9f1}.metric-grid div:nth-child(2n){border-right:0}.metric-grid div:nth-last-child(-n+2){border-bottom:0}.metric-grid dt{font-size:17px;font-weight:800}.metric-grid dd{margin:7px 0 0;color:#5d6a7e;line-height:1.55}.method-grid,.footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.method-grid article,.footer-grid article{padding:25px;border:1px solid #d9e1ed;border-radius:16px;background:#fff}.method-grid ul{margin:0;padding-left:20px;color:#56657a;line-height:1.75}.notice,.result-note{margin-top:14px;padding:17px 19px;border-radius:12px;background:#eaf1ff;color:#53637a;line-height:1.55}.notice{border-left:4px solid #2864d7}.result-note a{color:#1f59bd}.footer-grid p{color:#5d6a7e;line-height:1.6}.footer-grid pre{margin:14px 0 0;padding:17px;border-radius:10px;overflow:auto;background:#111a2b;color:#dce7f7;line-height:1.6;font-size:12px}@media(max-width:760px){main{padding:14px 14px 48px}header{padding:34px 24px}.setup,.metric-grid,.method-grid,.footer-grid{grid-template-columns:1fr 1fr}.section-heading{display:block}.section-heading p{margin-top:10px}.actions{flex-direction:column}.setup div:nth-child(2){border-right:0}.setup div:nth-child(-n+2){border-bottom:1px solid #e3e8f0}}@media(max-width:520px){.metric-grid,.method-grid,.footer-grid{grid-template-columns:1fr}.metric-grid div{border-right:0}.metric-grid div:nth-last-child(2){border-bottom:1px solid #e4e9f1}}`;
 }

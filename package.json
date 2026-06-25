@@ -11,6 +11,7 @@
     "benchmark": "npm run build && node scripts/run-all.mjs",
     "benchmark:ace-ag": "npm run build && node scripts/compare-ace-ag.mjs",
     "benchmark:profile": "npm run build && node scripts/profile-grid.mjs",
+    "benchmark:interaction": "npm run build && node scripts/measure-interaction-health.mjs",
     "report": "node scripts/build-report.mjs",
     "build:site": "npm run build && npm run report"
   },
