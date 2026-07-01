@@ -4,6 +4,8 @@ A reproducible React data grid comparison using one deterministic fixture, pinne
 
 **Live report:** https://vitashev.github.io/react-data-grid-benchmark/
 
+**Canonical write-up:** https://ace-grid.com/guides/react-data-grid-benchmark
+
 ## Compared implementations
 
 - Ace Grid Core
